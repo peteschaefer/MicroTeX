@@ -16,8 +16,9 @@ using namespace std;
 class Samples {
 private:
   int _index;
+public:
   vector<std::wstring> _samples;
-
+private:
   void readSamples(const string& file = "") {
     string path = file;
     if (path.empty()) path = LaTeX::getResRootPath() + "/SAMPLES.tex";

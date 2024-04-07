@@ -34,7 +34,7 @@ protected:
   TeXWidget* _texwidget;
   QTextEdit* _textedit;
   QSpinBox* _sizespin;
-
+public:
   tex::Samples _samples;
 };
 

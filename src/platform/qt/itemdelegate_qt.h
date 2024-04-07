@@ -7,16 +7,45 @@
 
 #include "latex.h"
 #include <QTableWidget>
+#include <QPainter>
+#include <platform/qt/graphic_qt.h>
 
 class TeXItemDelegate: public QAbstractItemDelegate
 {
-    //Q_OBJECT
+    Q_OBJECT
 public:
     using render_ptr = std::shared_ptr<tex::TeXRender>;
     int padding=4;
     int text_size=20;
 
+public slots:
+    void updateModelData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
+    {
+        if (!roles.contains(modelRole)) return;
+
+        for(int row = topLeft.row(); row <= bottomRight.row(); ++row)
+            for (int col = topLeft.column(); col <= bottomRight.column(); ++col)
+            {
+                QModelIndex index = topLeft.sibling(row,col);
+                render_ptr old_render = index.data(modelRole).value<render_ptr>();
+                if (old_render!=nullptr)
+                    createModelData(index,old_render->getWidth());
+            }
+    };
+
 private:
+    int modelRole = Qt::UserRole;
+
+    render_ptr createModelData(const QModelIndex& index, int width) const
+    {
+        QString latex = index.data(Qt::DisplayRole).toString();
+        render_ptr render = create_render(latex,100);
+        QVariant vrender = QVariant::fromValue<TeXItemDelegate::render_ptr>(render);
+        QAbstractItemModel* model = const_cast<QAbstractItemModel*>(index.model());
+        model->setData(index, vrender, modelRole);
+        return render;
+    }
+
     render_ptr create_render(QString latex, int width) const
     {
         tex::TeXRender* raw = tex::LaTeX::parse(
@@ -30,14 +59,9 @@ private:
 public:
     render_ptr get_render(const QModelIndex& index, int width) const
     {
-        render_ptr render = index.data(Qt::UserRole).value<render_ptr>();
-        if (render==nullptr) {
-            QString latex = index.data(Qt::DisplayRole).toString();
-            render = create_render(latex, width);
-            QAbstractItemModel* model = const_cast<QAbstractItemModel*>(index.model());
-            QVariant vrender = QVariant::fromValue<TeXItemDelegate::render_ptr>(render);
-            model->setData(index, vrender, Qt::UserRole);
-        }
+        render_ptr render = index.data(modelRole).value<render_ptr>();
+        if (render==nullptr)
+            render = createModelData(index,width);
         render->setWidth(width,tex::Alignment::left);
         return render;
     }

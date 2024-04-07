@@ -32,9 +32,10 @@
 #endif
 
 // Disable log if not in debug mode
-#ifndef CLATEX_DEBUG
-#   undef HAVE_LOG
-#endif
+//#ifndef CLATEX_DEBUG
+#undef HAVE_LOG
+#undef GRAPHICS_DEBUG
+//#endif
 
 #ifdef _MSC_VER
 #include "vcruntime.h"
