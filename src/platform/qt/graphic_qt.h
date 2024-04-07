@@ -23,6 +23,7 @@ class Font_qt : public Font {
 
 private:
   QFont _font;
+  sptr<QFontMetricsF> _metrics;
 
   static QMap<QString, QString> _loaded_families;
 
@@ -37,6 +38,10 @@ public:
   int getStyle() const;
 
   QFont getQFont() const;
+
+  qreal getAscent() const {
+      return _metrics->ascent();
+  }
 
   virtual float getSize() const override;
 

@@ -19,8 +19,8 @@ namespace qt_graphics
         QGraphicsItem* item = makeGraphicsViewItem(latex,view->width(), 0, text_size);
         QRectF bounds = item->boundingRect();
         //  scale to view
-        qreal rescale = std::max(view->width()/bounds.width(),view->height()/bounds.height());
-        item->setScale(rescale);
+        qreal rescale = std::min(view->width()/bounds.width(),view->height()/bounds.height());
+        item->setScale(0.9*rescale);
         scene->addItem(item);
         view->setScene(scene);
     }

@@ -48,6 +48,7 @@ Font_qt::Font_qt(const string& family, int style, float size) {
 
   _font.setBold(style & BOLD);
   _font.setItalic(style & ITALIC);
+    _metrics.reset(new QFontMetricsF(_font));
 }
 
 Font_qt::Font_qt(const string& file, float size)
@@ -69,6 +70,7 @@ Font_qt::Font_qt(const string& file, float size)
 #ifdef HAVE_LOG
     __log << file << " already loaded, skip\n";
 #endif
+    _metrics.reset(new QFontMetricsF(_font));
     return;
   }
 
@@ -89,6 +91,7 @@ Font_qt::Font_qt(const string& file, float size)
 #endif
     }
   }
+  _metrics.reset(new QFontMetricsF(_font));
 }
 
 string Font_qt::getFamily() const {
