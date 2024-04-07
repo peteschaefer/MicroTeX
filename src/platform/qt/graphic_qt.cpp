@@ -169,8 +169,9 @@ sptr<TextLayout> TextLayout::create(const std::wstring& src, const sptr<Font>& f
 Graphics2D_qt::Graphics2D_qt(QPainter* painter)
     : _painter(painter) {
   _sx = _sy = 1.f;
-  setColor(BLACK);
-  setStroke(Stroke());
+  _color = BLACK;
+  if (painter) painter->setPen(makePen());
+  _stroke = Stroke();
   setFont(&_default_font);
 }
 
@@ -183,41 +184,45 @@ QBrush Graphics2D_qt::getQBrush() const {
                        color_b(_color), color_a(_color)));
 }
 
+QPen Graphics2D_qt::makePen() {
+
+    QBrush brush(getQBrush());
+
+    Qt::PenCapStyle cap;
+    switch (_stroke.cap) {
+        case CAP_ROUND:
+            cap = Qt::RoundCap;
+            break;
+        case CAP_SQUARE:
+            cap = Qt::SquareCap;
+            break;
+        case CAP_BUTT:
+        default:
+            cap = Qt::FlatCap;
+            break;
+    }
+
+    Qt::PenJoinStyle join;
+    switch (_stroke.join) {
+        case JOIN_BEVEL:
+            join = Qt::BevelJoin;
+            break;
+        case JOIN_ROUND:
+            join = Qt::RoundJoin;
+            break;
+        case JOIN_MITER:
+        default:
+            join = Qt::MiterJoin;
+            break;
+    }
+
+    QPen pen(brush, _stroke.lineWidth, Qt::SolidLine, cap, join);
+    pen.setMiterLimit(_stroke.miterLimit);
+    return pen;
+}
+
 void Graphics2D_qt::setPen() {
-
-  QBrush brush(getQBrush());
-
-  Qt::PenCapStyle cap;
-  switch (_stroke.cap) {
-  case CAP_ROUND:
-    cap = Qt::RoundCap;
-    break;
-  case CAP_SQUARE:
-    cap = Qt::SquareCap;
-    break;
-  case CAP_BUTT:
-  default:
-    cap = Qt::FlatCap;
-    break;
-  }
-
-  Qt::PenJoinStyle join;
-  switch (_stroke.join) {
-  case JOIN_BEVEL:
-    join = Qt::BevelJoin;
-    break;
-  case JOIN_ROUND:
-    join = Qt::RoundJoin;
-    break;
-  case JOIN_MITER:
-  default:
-    join = Qt::MiterJoin;
-    break;
-  }
-
-  QPen pen(brush, _stroke.lineWidth, Qt::SolidLine, cap, join);
-  pen.setMiterLimit(_stroke.miterLimit);
-  _painter->setPen(pen);
+  _painter->setPen(makePen());
 }
 
 void Graphics2D_qt::setColor(color c) {

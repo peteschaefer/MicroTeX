@@ -93,6 +93,10 @@ pair<sptr<HBox>, sptr<HBox>> HBox::split(int pos, int shift) {
 }
 
 void HBox::draw(Graphics2D& g2, float x, float y) {
+    //  TODO make this overridable at Graphics2D.
+    //  Find sequences of CharBoxes, draw them as *one* string.
+    //  Let's they we need a method Graphics2D.drawCharSequence(iterator begin, end)
+    //  Default implementation would just fall back to this loop:
   float xPos = x;
   for (const auto& box : _children) {
     box->draw(g2, xPos, y + box->_shift);

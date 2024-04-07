@@ -4,10 +4,14 @@
 #define QT_MAINWINDOW_H
 
 #include "samples.h"
+
+#define QT_GRAPHICSVIEW 1
 #ifdef BUILD_SKIA
   #include "qt_skiatexwidget.h"
+#elif defined(QT_GRAPHICSVIEW)
+  class QGraphicsView;
 #else
-  #include "qt_texwidget.h"
+  #include "qt_texgraphicsview.h"
 #endif
 
 #include <QWidget>
@@ -31,7 +35,11 @@ protected slots:
   void fontSizeChanged(int size);
 
 protected:
-  TeXWidget* _texwidget;
+#if defined(QT_GRAPHICSVIEW)
+  QGraphicsView* _texwidget;
+#else
+  TeXGraphicsView* _texwidget;
+#endif
   QTextEdit* _textedit;
   QSpinBox* _sizespin;
 

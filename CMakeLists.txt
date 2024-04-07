@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(LaTeX)
 
-add_library(LaTeX "")
+add_library(LaTeX ""
+        src/platform/qt/graphic_view_qt.h)
 
 # MSVC Compat
 
@@ -52,7 +53,7 @@ if (MSVC)
     target_link_libraries(LaTeX PRIVATE tinyxml2::tinyxml2)
 else ()
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET tinyxml2)
+#    pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET tinyxml2)
     target_link_libraries(LaTeX PRIVATE tinyxml2)
 endif ()
 
@@ -146,11 +147,13 @@ target_sources(LaTeX PRIVATE
         )
 target_include_directories(LaTeX PUBLIC src)
 
-# check operating system
+set(QT ON)
+set(QT_GRAPHICS_VIEW ON)
 
+# check operating system
 if (QT)
     message(STATUS, "Cross platform build using Qt")
-    target_compile_definitions(LaTeX PUBLIC -DBUILD_QT)
+    target_compile_definitions(LaTeX PUBLIC -DBUILD_QT -DQT_GRAPHICS_VIEW)
     find_package(QT NAMES Qt6 Qt5 COMPONENTS Gui Widgets PrintSupport REQUIRED)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Gui Widgets PrintSupport REQUIRED)
     target_sources(LaTeX PRIVATE
@@ -163,7 +166,8 @@ if (QT)
             src/samples/qt_texwidget.cpp
             src/samples/qt_mainwindow.cpp
             src/samples/qt_main.cpp
-            )
+            src/samples/qt_texgraphicsview.h
+    )
     target_link_libraries(LaTeXQtSample PRIVATE
             Qt${QT_VERSION_MAJOR}::Widgets
             Qt${QT_VERSION_MAJOR}::PrintSupport

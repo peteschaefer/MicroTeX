@@ -69,7 +69,7 @@ public:
 /**************************************************************************************************/
 
 class Graphics2D_qt : public Graphics2D {
-private:
+protected:
   /*static*/ Font_qt _default_font = Font_qt("SansSerif", PLAIN, 20.f);
 
   QPainter* _painter;
@@ -79,7 +79,8 @@ private:
   const Font_qt* _font;
   float _sx, _sy;
 
-  void setPen();
+  QPen makePen();
+  virtual void setPen();
   QBrush getQBrush() const;
 
 public:

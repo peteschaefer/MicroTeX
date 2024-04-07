@@ -14,6 +14,11 @@
 #include "qt_mainwindow.h"
 #include "moc_qt_mainwindow.cpp"
 
+#if defined(QT_GRAPHICSVIEW)
+#include <QGraphicsView>
+#include "qt_texgraphicsview.h"
+#endif
+
 using namespace std;
 
 MainWindow::MainWindow(QWidget* parent)
@@ -29,7 +34,12 @@ MainWindow::MainWindow(QWidget* parent)
   layout->addWidget(splitter);
 
   // the TeX widget is on the left
-  _texwidget = new TeXWidget(nullptr, text_size);
+  //_texwidget = new TeXWidget(nullptr, text_size);
+#if defined(QT_GRAPHICSVIEW)
+    _texwidget = new QGraphicsView();
+#else
+  _texwidget = new TeXGraphicsView(nullptr);
+#endif
   _texwidget->setMinimumWidth(400);
 
   // these are the widgets on the right side
@@ -77,20 +87,32 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::fontSizeChanged(int size)
 {
-  _texwidget->setTextSize(size);
+#if defined(QT_GRAPHICSVIEW)
+    qt_graphics::setTextSize(_texwidget,size);
+#else
+    _texwidget->setTextSize(size);
+#endif
 }
 
 void MainWindow::nextClicked()
 {
   auto sample = _samples.next();
   _textedit->setText(QString::fromStdWString(sample));
+#if defined(QT_GRAPHICSVIEW)
+  qt_graphics::setLaTeX(_texwidget,sample);
+#else
   _texwidget->setLaTeX(sample);
+#endif
 }
 
 void MainWindow::renderClicked()
 {
   QString text = _textedit->toPlainText();
+#if defined(QT_GRAPHICSVIEW)
+    qt_graphics::setLaTeX(_texwidget,text.toStdWString());
+#else
   _texwidget->setLaTeX(text.toStdWString());
+#endif
 }
 
 QString MainWindow::saveAsDialog()
@@ -143,7 +165,11 @@ void MainWindow::saveClicked()
 #else
     QString fileName = saveAsDialog();
     if (!fileName.isEmpty())
+# if defined(QT_GRAPHICSVIEW)
+        qt_graphics::savePDF(_texwidget,fileName);
+# else
         _texwidget->savePDF(fileName);
+# endif
 #endif
 }
 
