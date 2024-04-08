@@ -11,7 +11,7 @@
 #elif defined(QT_GRAPHICSVIEW)
   class QGraphicsView;
 #else
-  #include "qt_texgraphicsview.h"
+  #include "qt_texwidget.h"
 #endif
 
 #include <QWidget>
@@ -38,7 +38,7 @@ protected:
 #if defined(QT_GRAPHICSVIEW)
   QGraphicsView* _texwidget;
 #else
-  TeXGraphicsView* _texwidget;
+  TeXWidget* _texwidget;
 #endif
   QTextEdit* _textedit;
   QSpinBox* _sizespin;

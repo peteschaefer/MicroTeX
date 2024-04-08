@@ -12,120 +12,51 @@
 
 namespace tex
 {
+    class TeXRender;
+
+    class TeXGraphicsItem: public QGraphicsItemGroup
+    {
+    private:
+      void setupRender(TeXRender* render,int padding);
+      void setupText(const std::wstring& latex, int width, int padding, float text_size);
+
+    public:
+      TeXGraphicsItem(QGraphicsItem *parent = nullptr) : QGraphicsItemGroup() { }
+
+      void setRender(TeXRender* render, int padding=0);
+      void setLaTeX(const std::wstring& latex, int width, int padding=0, float text_size=20.0);
+    };
+
+
     class Graphics2D_qt_view : public Graphics2D_qt
     {
     protected:
-        QGraphicsItemGroup* _group;
-        QTransform _transform;
-        QPen _pen;
+      TeXGraphicsItem* _group;
+      QTransform _tf;
+      QPen _pen;
 
-        void setPen() override { _pen = makePen(); }
+      void setPen() override { _pen = makePen(); }
     public:
-        Graphics2D_qt_view() : Graphics2D_qt(nullptr) {
-            _group = new QGraphicsItemGroup();
-        }
-
-        QGraphicsItem* result() const {
-            return _group;
-        }
+        Graphics2D_qt_view(TeXGraphicsItem* group) : Graphics2D_qt(nullptr), _group(group) { }
 
 //      re-implements Graphics2D
-        void reset() override {
-            _transform.reset();
-            _sx = _sy = 1.f;
-        }
+        void reset() override;
+        void scale(float sx, float sy) override;
+        void translate(float dx, float dy) override;
+        void rotate(float angle) override;
+        void rotate(float angle, float px, float py) override;
 
-        void scale(float sx, float sy) override {
-            _sx *= sx;
-            _sy *= sy;
-            _transform.setMatrix(
-                    _sx, _transform.m12(), _transform.m13(),
-                    _transform.m21(), _sy, _transform.m23(),
-                    _transform.m31(), _transform.m32(), _transform.m33() );
-        }
-
-        void translate(float dx, float dy) override {
-            _transform.setMatrix(
-                    _sx, _transform.m12(), _transform.m13(),
-                    _transform.m21(), _sy, _transform.m23(),
-                    _transform.m31()+dx*_sx, _transform.m32()+dy*_sy, _transform.m33() );
-        }
-
-        void rotate(float angle) override {
-            //_painter->rotate(qRadiansToDegrees(angle));
-            qreal cosa = std::cos(angle);
-            qreal sina = std::sin(angle);
-            _sx *= cosa;
-            _sy *= cosa;
-            _transform.setMatrix(
-                    _sx, -sina, _transform.m13(),
-                    sina, _sy, _transform.m23(),
-                    _transform.m31(), _transform.m32(), _transform.m33() );
-        }
-
-        void rotate(float angle, float px, float py) override {
-            translate(px, py);
-            rotate(angle);
-            translate(-px, -py);
-        }
-
-        void drawText(const wstring &t, float x, float y) override {
-          drawTextItem(_font->getQFont(), _font->getQFontMetrics(), QPointF(x,y), QString::fromStdWString(t));
-        }
-
-        void drawTextItem(QFont font, QFontMetricsF* metrics, QPointF pos, QString qtext) override {
-          QGraphicsSimpleTextItem* text = new QGraphicsSimpleTextItem(qtext, _group);
-          text->setFont(font);
-          text->setPos(pos.x(),pos.y()-metrics->ascent()*_sy);
-          //  note: y = baseline
-          text->setTransform(_transform);
-          text->setBrush(getQBrush());
-          _group->addToGroup(text);
-        }
-
-        void drawLine(float x, float y1, float x2, float y2) override {
-            QGraphicsLineItem* line = new QGraphicsLineItem(x,y1,x2,y2, _group);
-            line->setPen(makePen());
-            line->setTransform(_transform);
-            _group->addToGroup(line);
-        }
-
-        void drawRect(float x, float y, float w, float h) override {
-            drawRect(x,y,w,h,makePen());
-        }
-
-        void fillRect(float x, float y, float w, float h) override {
-            drawRect(x,y,w,h,makePen(), getQBrush());
-        }
-
-        void drawRoundRect(float x, float y, float w, float h, float rx, float ry) override {
-            drawRoundRect(x, y, w, h, rx, ry, makePen());
-        }
-
-        void fillRoundRect(float x, float y, float w, float h, float rx, float ry) override {
-            drawRoundRect(x, y, w, h, rx, ry, makePen(), getQBrush());
-        }
+        void drawText(const std::wstring &t, float x, float y) override;
+        void drawTextItem(QFont font, QFontMetricsF* metrics, QPointF pos, QString qtext) override;
+        void drawLine(float x, float y1, float x2, float y2) override;
+        void drawRect(float x, float y, float w, float h) override;
+        void fillRect(float x, float y, float w, float h) override;
+        void drawRoundRect(float x, float y, float w, float h, float rx, float ry) override;
+        void fillRoundRect(float x, float y, float w, float h, float rx, float ry) override;
 
     private:
-        void drawRect(float x, float y, float w, float h, QPen pen, QBrush brush = QBrush())
-        {
-            QGraphicsRectItem* rect = new QGraphicsRectItem(x,y,w,h);
-            rect->setPen(pen);
-            rect->setBrush(brush);
-            rect->setTransform(_transform);
-            _group->addToGroup(rect);
-        }
-        void drawRoundRect(float x, float y, float w, float h, float rx, float ry, QPen pen, QBrush brush = QBrush())
-        {
-            //  is a bit more involved. We need the help of a QPaintPath
-            QPainterPath path;
-            path.addRoundedRect(x,y,w,h,rx,ry);
-            QGraphicsPathItem* item = new QGraphicsPathItem(path,_group);
-            item->setPen(pen);
-            item->setBrush(brush);
-            item->setTransform(_transform);
-            _group->addToGroup(item);
-        }
+        void drawRect(float x, float y, float w, float h, QPen pen, QBrush brush = QBrush());
+        void drawRoundRect(float x, float y, float w, float h, float rx, float ry, QPen pen, QBrush brush = QBrush());
     };
 }
 #endif //LATEX_GRAPHIC_VIEW_QT_H

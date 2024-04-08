@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget* parent)
 #if defined(QT_GRAPHICSVIEW)
     _texwidget = new QGraphicsView();
 #else
-  _texwidget = new TeXGraphicsView(nullptr);
+  _texwidget = new TeXWidget(parent);
 #endif
   _texwidget->setMinimumWidth(400);
 

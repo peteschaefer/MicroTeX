@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(LaTeX)
 
-add_library(LaTeX "")
+add_library(LaTeX ""
+        src/platform/qt/graphic_view_qt.cpp)
 set(QT ON)
 
 # MSVC Compat
@@ -163,15 +164,18 @@ if (QT)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Gui Widgets PrintSupport REQUIRED)
     target_sources(LaTeX PRIVATE
             src/platform/qt/graphic_qt.cpp
+            src/platform/qt/graphic_view_qt.cpp
             )
     target_link_libraries(LaTeX PRIVATE
             Qt${QT_VERSION_MAJOR}::Gui
+            Qt${QT_VERSION_MAJOR}::Widgets
             )
     add_executable(LaTeXQtSample
             src/samples/qt_texwidget.cpp
             src/samples/qt_mainwindow.cpp
             src/samples/qt_main.cpp
             src/samples/qt_texgraphicsview.h
+            src/samples/qt_texgraphicsview.cpp
     )
     target_link_libraries(LaTeXQtSample PRIVATE
             Qt${QT_VERSION_MAJOR}::Widgets

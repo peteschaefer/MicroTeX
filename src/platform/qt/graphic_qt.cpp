@@ -338,6 +338,11 @@ void Graphics2D_qt::fillRoundRect(float x, float y, float w, float h, float rx, 
   _painter->setBrush(QBrush());
 }
 
+void Graphics2D_qt::drawTextItem(QFont font, QFontMetricsF *metrics,
+                                 QPointF pos, QString text) {
+  getQPainter()->setFont(font);
+  getQPainter()->drawText(pos, text);
+}
 
 /**************************************************************************************************/
 
