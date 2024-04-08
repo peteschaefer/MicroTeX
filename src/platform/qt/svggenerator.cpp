@@ -2,6 +2,7 @@
  */
 
 #include "svggenerator.h"
+#include <iostream>
 
 svgtool::SvgGenerator::SvgGenerator()
     : _delegate(), _engine(new SvgPaintEngine(_delegate.paintEngine()))
@@ -101,10 +102,6 @@ void svgtool::SvgPaintEngine::drawPolygon(const QPoint *points, int pointCount,
                                           QPaintEngine::PolygonDrawMode mode) {
   if (pointCount>0) _delegate->drawPolygon(points, pointCount, mode);
 }
-void svgtool::SvgPaintEngine::drawTextItem(const QPointF &p,
-                                           const QTextItem &textItem) {
-  _delegate->drawTextItem(p, textItem);
-}
 void svgtool::SvgPaintEngine::drawTiledPixmap(const QRectF &r,
                                               const QPixmap &pixmap,
                                               const QPointF &s) {
@@ -121,3 +118,55 @@ QPoint svgtool::SvgPaintEngine::coordinateOffset() const {
 svgtool::SvgPaintEngine::SvgPaintEngine(QPaintEngine *del) : _delegate(del) {
   assert(_delegate!=nullptr);
 }
+
+void svgtool::SvgPaintEngine::drawTextItem(const QPointF &p, const QTextItem &item) {
+  QPainterPath path = TextToPath::toPath(item.font(), item.text(), p);
+  if (path.isEmpty()) {
+    _delegate->drawTextItem(p, item);
+  }
+  else {
+    //_delegate->painter()->setPen(Qt::NoPen);
+    //_delegate->painter()->setBrush(Qt::black);
+    //_delegate->updateState(*state);
+    this->painter()->setPen(Qt::NoPen);
+    this->painter()->setBrush(Qt::black);
+    this->painter()->setClipping(false);
+    this->updateState(*state);
+    this->drawPath(path);
+  }
+}
+
+QHash<QString,QRawFont> svgtool::TextToPath::_raw;
+
+QPainterPath svgtool::TextToPath::toPath(QFont font, QString text, QPointF pos)
+{
+  QRawFont rfont = rawFont(font);
+
+  QVector<quint32> glyph_indexes = rfont.glyphIndexesForString(text);
+  QVector<QPointF> advances = rfont.advancesForGlyphIndexes(glyph_indexes);
+
+  assert(text.length()==glyph_indexes.length());
+  assert(advances.length()==text.length());
+
+  QPainterPath result;
+  for(int i=0; i < glyph_indexes.length(); ++i) {
+    QPainterPath glyph = rfont.pathForGlyph(glyph_indexes[i]);
+    result.moveTo(pos);
+    result.addPath(glyph);
+    pos += advances[i];
+  }
+  return result;
+}
+
+QRawFont svgtool::TextToPath::rawFont(QFont font) {
+  auto iraw = _raw.find(font.family());
+  if (iraw!=_raw.end()) return *iraw;
+  //  else
+  QRawFont raw = QRawFont::fromFont(font);
+  assert(raw.familyName()==font.family());
+  std::cout << "mapping glyphs for font "<<raw.familyName().toStdString()<<std::endl;
+  _raw.insert(raw.familyName(),raw);
+  return raw;
+}
+
+QPainterPath svgtool::TextToPath::toPath(QTextItem item, QPointF pos) { return toPath(item.font(),item.text(),pos); }

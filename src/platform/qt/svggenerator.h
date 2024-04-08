@@ -4,8 +4,10 @@
 #ifndef LATEX_SVGGENERATOR_H
 #define LATEX_SVGGENERATOR_H
 
-#include <QSvgGenerator>
 #include <QPaintEngine>
+#include <QPainterPath>
+#include <QRawFont>
+#include <QSvgGenerator>
 
 /**
  *  A wrapper for QSvgGenerator.
@@ -13,6 +15,20 @@
  */
 namespace svgtool
 {
+  namespace TextToPath
+  {
+    extern QHash<QString,QRawFont> _raw;
+/*
+    bool useFont(QString fileName, qreal pixelsize=20.0) {
+      QRawFont rfont (fileName,pixelsize);
+      _raw.insert(rfont.familyName(),rfont);
+    }
+*/
+    QRawFont rawFont(QFont font);
+
+    QPainterPath toPath(QFont font, QString text, QPointF pos);
+    QPainterPath toPath(QTextItem item, QPointF pos={0,0});
+  };
 
   class SvgPaintEngine: public QPaintEngine
   {
@@ -24,7 +40,7 @@ namespace svgtool
     virtual ~SvgPaintEngine() {}
 
     //  the only method that is actually re-implemented
-    void drawTextItem(const QPointF &p, const QTextItem &textItem) override;
+    void drawTextItem(const QPointF &p, const QTextItem &item) override;
 
     //  delegate to QPaintEngine
     bool begin(QPaintDevice *pdev) override;
