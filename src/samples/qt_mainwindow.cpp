@@ -10,6 +10,9 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <QSettings>
+#include <QSvgGenerator>
+
+#include "platform/qt/svggenerator.h"
 
 #include "qt_mainwindow.h"
 #include "moc_qt_mainwindow.cpp"
@@ -51,7 +54,7 @@ MainWindow::MainWindow(QWidget* parent)
   _sizespin->setMinimum(1);
   QPushButton* next = new QPushButton("Next example");
   QPushButton* render = new QPushButton("Rendering");
-  QPushButton* save = new QPushButton("Save as PDF");
+  QPushButton* save = new QPushButton("Save as...");
   clayout->addWidget(label1);
   clayout->addWidget(_sizespin);
   clayout->addWidget(next);
@@ -93,12 +96,12 @@ void MainWindow::renderClicked()
   _texwidget->setLaTeX(text.toStdWString());
 }
 
-QString MainWindow::saveAsDialog()
+bool MainWindow::saveAsDialog(QString& fileName, QString& suffix)
 {
     const QString anyFile = "Any File (*)";
     const QString pdfFiles = "PDF files (*.pdf)";
-    //const QString svgFiles = "Vector Graphics (*.svg)";
-    QStringList filters = { anyFile, pdfFiles };
+    const QString svgFiles = "Vector Graphics (*.svg)";
+    QStringList filters = { anyFile, pdfFiles, svgFiles };
 
     QSettings settings;
     QFileDialog fileDialog(this,"Save As...");
@@ -112,17 +115,17 @@ QString MainWindow::saveAsDialog()
     fileDialog.selectNameFilter(pdfFiles);
 
     if (fileDialog.exec() != QDialog::Accepted)
-        return {}; //  user cancelled
+        return false; //  user cancelled
 
     QStringList selected = fileDialog.selectedFiles();
     if (selected.isEmpty())
-        return {};
+        return false;
 
-    QString fileName = selected.first();
+    fileName = selected.first();
     if (fileName.isEmpty())
-        return {};
+        return false;
 
-    QString suffix = QFileInfo(fileName).suffix().toLower();
+    suffix = QFileInfo(fileName).suffix().toLower();
     QString selectedFilter = fileDialog.selectedNameFilter();
 
     if (suffix.isEmpty()) {
@@ -133,7 +136,7 @@ QString MainWindow::saveAsDialog()
 
     settings.setValue("filedialog.saveas",fileDialog.saveState());
     settings.setValue("filedialog.dir",fileDialog.directory().absolutePath());
-    return fileName;
+    return true;
 }
 
 void MainWindow::saveClicked()
@@ -141,10 +144,35 @@ void MainWindow::saveClicked()
 #ifdef BUILD_SKIA
   _texwidget->saveSVG("out.svg");
 #else
-    QString fileName = saveAsDialog();
-    if (!fileName.isEmpty())
+    QString fileName,suffix;
+    if (saveAsDialog(fileName,suffix)) {
+      if (suffix=="svg")
+        saveSVG(_texwidget,fileName);
+      else
         _texwidget->savePDF(fileName);
+    }
+
 #endif
 }
 
 #endif
+
+
+void saveSVG(QWidget *widget, QString fileName) {
+  svgtool::SvgGenerator generator;
+
+  //QSizeF sceneSize = widget->scene()->sceneRect().size();
+  //QSizeF viewSize = widget->viewport()->size();
+  QSizeF widgetSize = widget->size();
+
+  generator.setFileName(fileName);
+  generator.setSize(QSize((int)widgetSize.width(), (int)widgetSize.height()));
+  //generator.setViewBox(graphicsView->sceneRect());
+  generator.setTitle("MicroTeX");
+  generator.setDescription("Created by MicroTeX");
+
+  QPainter painter;
+  QRectF target(QPointF(0,0),widgetSize);
+  painter.begin(&generator);
+  widget->render(&painter);//, target);
+}

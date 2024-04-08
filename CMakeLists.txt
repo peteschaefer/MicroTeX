@@ -52,8 +52,13 @@ if (MSVC)
     target_link_libraries(LaTeX PRIVATE tinyxml2::tinyxml2)
 else ()
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET tinyxml2)
-    target_link_libraries(LaTeX PRIVATE tinyxml2)
+#    pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET tinyxml2)
+    target_link_libraries(LaTeX PRIVATE /home/schaefer/lib/libtinyxml2.a)
+    set(QT ON)
+    set(Qt5_PATH /opt/m2m/qt5.15.3-dynamic)
+    set(Qt_VERSION 5.15.3)
+    list(APPEND CMAKE_PREFIX_PATH ${Qt5_PATH}/lib64/cmake)
+    include_directories(/home/schaefer/lib)
 endif ()
 
 # source files
@@ -151,8 +156,8 @@ target_include_directories(LaTeX PUBLIC src)
 if (QT)
     message(STATUS, "Cross platform build using Qt")
     target_compile_definitions(LaTeX PUBLIC -DBUILD_QT)
-    find_package(QT NAMES Qt6 Qt5 COMPONENTS Gui Widgets PrintSupport REQUIRED)
-    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Gui Widgets PrintSupport REQUIRED)
+    find_package(QT NAMES Qt6 Qt5 COMPONENTS Gui Widgets PrintSupport Svg REQUIRED)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Gui Widgets PrintSupport Svg REQUIRED)
     target_sources(LaTeX PRIVATE
             src/platform/qt/graphic_qt.cpp
             )
@@ -163,10 +168,13 @@ if (QT)
             src/samples/qt_texwidget.cpp
             src/samples/qt_mainwindow.cpp
             src/samples/qt_main.cpp
-            )
+            src/platform/qt/svggenerator.h
+            src/platform/qt/svggenerator.cpp
+    )
     target_link_libraries(LaTeXQtSample PRIVATE
             Qt${QT_VERSION_MAJOR}::Widgets
             Qt${QT_VERSION_MAJOR}::PrintSupport
+            Qt${QT_VERSION_MAJOR}::Svg
             LaTeX)
     set_target_properties(LaTeXQtSample PROPERTIES OUTPUT_NAME LaTeX)
     set_target_properties(LaTeXQtSample PROPERTIES AUTOMOC ON)

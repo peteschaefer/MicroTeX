@@ -22,7 +22,7 @@ public:
   MainWindow(QWidget* parent=nullptr);
 
   //! \return file name, or empty string on cancel
-  QString saveAsDialog();
+  bool saveAsDialog(QString& fileName, QString& suffix);
 
 protected slots:
   void nextClicked();
@@ -37,6 +37,8 @@ protected:
 
   tex::Samples _samples;
 };
+
+void saveSVG(QWidget* widget, QString fileName);
 
 #endif
 #endif
