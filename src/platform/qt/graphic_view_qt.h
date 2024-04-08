@@ -53,31 +53,34 @@ namespace tex
 
         void rotate(float angle) override {
             //_painter->rotate(qRadiansToDegrees(angle));
+            qreal cosa = std::cos(angle);
+            qreal sina = std::sin(angle);
+            _sx *= cosa;
+            _sy *= cosa;
             _transform.setMatrix(
-                    _sx, _transform.m12(), _transform.m13(),
-                    _transform.m21(), _sy, _transform.m23(),
+                    _sx, -sina, _transform.m13(),
+                    sina, _sy, _transform.m23(),
                     _transform.m31(), _transform.m32(), _transform.m33() );
         }
 
         void rotate(float angle, float px, float py) override {
-            //_painter->translate(px, py);
-            //_painter->rotate(qRadiansToDegrees(angle));
-            //_painter->translate(-px, -py);
-            _transform.setMatrix(
-                    _sx, _transform.m12(), _transform.m13(),
-                    _transform.m21(), _sy, _transform.m23(),
-                    _transform.m31(), _transform.m32(), _transform.m33() );
+            translate(px, py);
+            rotate(angle);
+            translate(-px, -py);
         }
 
         void drawText(const wstring &t, float x, float y) override {
-            QGraphicsSimpleTextItem* text = new QGraphicsSimpleTextItem(QString::fromStdWString(t), _group);
-            //QFontMetricsF fmtx(_font->getQFont());
-            text->setFont(_font->getQFont());
-            text->setPos(x,y-_font->getAscent()*_sy);
-            //  note: y = baseline
-            text->setTransform(_transform);
-            text->setBrush(getQBrush());
-            _group->addToGroup(text);
+          drawTextItem(_font->getQFont(), _font->getQFontMetrics(), QPointF(x,y), QString::fromStdWString(t));
+        }
+
+        void drawTextItem(QFont font, QFontMetricsF* metrics, QPointF pos, QString qtext) override {
+          QGraphicsSimpleTextItem* text = new QGraphicsSimpleTextItem(qtext, _group);
+          text->setFont(font);
+          text->setPos(pos.x(),pos.y()-metrics->ascent()*_sy);
+          //  note: y = baseline
+          text->setTransform(_transform);
+          text->setBrush(getQBrush());
+          _group->addToGroup(text);
         }
 
         void drawLine(float x, float y1, float x2, float y2) override {

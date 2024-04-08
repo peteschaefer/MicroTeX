@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(LaTeX)
 
-add_library(LaTeX ""
-        src/platform/qt/graphic_view_qt.h)
+add_library(LaTeX "")
+set(QT ON)
 
 # MSVC Compat
 
@@ -54,7 +54,11 @@ if (MSVC)
 else ()
     find_package(PkgConfig REQUIRED)
 #    pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET tinyxml2)
-    target_link_libraries(LaTeX PRIVATE tinyxml2)
+    target_link_libraries(LaTeX PRIVATE /home/schaefer/lib/libtinyxml2.a)
+    set(Qt5_PATH /opt/m2m/qt5.15.3-dynamic)
+    set(Qt_VERSION 5.15.3)
+    list(APPEND CMAKE_PREFIX_PATH ${Qt5_PATH}/lib64/cmake)
+    include_directories(/home/schaefer/lib)
 endif ()
 
 # source files
@@ -151,6 +155,7 @@ set(QT ON)
 set(QT_GRAPHICS_VIEW ON)
 
 # check operating system
+
 if (QT)
     message(STATUS, "Cross platform build using Qt")
     target_compile_definitions(LaTeX PUBLIC -DBUILD_QT -DQT_GRAPHICS_VIEW)

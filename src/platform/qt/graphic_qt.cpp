@@ -139,14 +139,13 @@ sptr<Font> Font::_create(const string& name, int style, float size) {
 /**************************************************************************************************/
 
 TextLayout_qt::TextLayout_qt(const std::wstring& src, const sptr<Font_qt>& f) :
-  _font(f->getQFont()),
+  _font_qt(f),
   _text(wstring_to_QString(src))
 {
 }
 
 void TextLayout_qt::getBounds(Rect& r) {
-  QFontMetricsF fm(_font);
-  QRectF br(fm.boundingRect(_text));
+  QRectF br(_font_qt->getQFontMetrics()->boundingRect(_text));
 
   r.x = br.left();
   r.y = br.top();
@@ -156,8 +155,7 @@ void TextLayout_qt::getBounds(Rect& r) {
 
 void TextLayout_qt::draw(Graphics2D& g2, float x, float y) {
   Graphics2D_qt& g = static_cast<Graphics2D_qt&>(g2);
-  g.getQPainter()->setFont(_font);
-  g.getQPainter()->drawText(QPointF(x, y), _text);
+  g.drawTextItem(_font_qt->getQFont(),_font_qt->getQFontMetrics(), QPointF(x, y), _text);
 }
 
 sptr<TextLayout> TextLayout::create(const std::wstring& src, const sptr<Font>& font) {

@@ -39,8 +39,8 @@ public:
 
   QFont getQFont() const;
 
-  qreal getAscent() const {
-      return _metrics->ascent();
+  QFontMetricsF* getQFontMetrics() const {
+      return _metrics.get();
   }
 
   virtual float getSize() const override;
@@ -60,7 +60,7 @@ public:
 
 class TextLayout_qt : public TextLayout {
 private:
-  QFont _font;
+  sptr<Font_qt> _font_qt;
   QString _text;
 
 public:
@@ -134,6 +134,11 @@ public:
   virtual void drawRoundRect(float x, float y, float w, float h, float rx, float ry) override;
 
   virtual void fillRoundRect(float x, float y, float w, float h, float rx, float ry) override;
+
+  virtual void drawTextItem(QFont font, QFontMetricsF* metrics, QPointF pos, QString text) {
+    getQPainter()->setFont(font);
+    getQPainter()->drawText(pos, text);
+  }
 };
 
 }
