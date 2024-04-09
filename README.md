@@ -331,7 +331,7 @@ Builder mode:
 wstring code = L"\\int_{now}^{+\\infty} \\text{Keep trying}";
 TeXFormula formula;
 TeXRenderBuilder builder;
-formula.setLaTeX(code);
+formula.renderLaTeX(code);
 
 auto r = builder
     // environment style, see TeXConstants (defined in common.h) to

@@ -8,12 +8,12 @@
 
 using namespace tex;
 
-void TeXGraphicsItem::setupRender(tex::TeXRender *render, int padding) {
+void TeXGraphicsItem::setup(TeXRender *render, int padding) {
   Graphics2D_qt_view g2(this);
   render->draw(g2, padding, padding);
 }
 
-void TeXGraphicsItem::setupText(const std::wstring &latex, int width,
+void TeXGraphicsItem::setupLaTeX(const std::wstring &latex, int width,
                                     int padding, float text_size) {
   TeXRender* render = tex::LaTeX::parse(
       latex,
@@ -21,17 +21,17 @@ void TeXGraphicsItem::setupText(const std::wstring &latex, int width,
       text_size,
       text_size / 3.f,
       0xff424242);
-  setupRender(render,padding);
+  setup(render, padding);
   delete render;
 }
 
-void TeXGraphicsItem::setRender(tex::TeXRender *render, int padding) {
-  setupRender(render,padding);
+void TeXGraphicsItem::render(TeXRender *render, int padding) {
+  setup(render, padding);
 }
 
-void TeXGraphicsItem::setLaTeX(const std::wstring &latex, int width,
+void TeXGraphicsItem::renderLaTeX(const std::wstring &latex, int width,
                                    int padding, float text_size) {
-  setupText(latex,width,padding,text_size);
+  setupLaTeX(latex, width, padding, text_size);
 }
 
 void Graphics2D_qt_view::drawRoundRect(float x, float y, float w, float h,
@@ -67,7 +67,7 @@ void Graphics2D_qt_view::drawRoundRect(float x, float y, float w, float h,
 }
 
 void Graphics2D_qt_view::fillRect(float x, float y, float w, float h) {
-  drawRect(x,y,w,h,makePen(), getQBrush());
+  drawRect(x,y,w,h,Qt::NoPen, getQBrush());
 }
 
 void Graphics2D_qt_view::drawRect(float x, float y, float w, float h) {
@@ -86,10 +86,16 @@ void Graphics2D_qt_view::drawTextItem(QFont font, QFontMetricsF *metrics,
   QGraphicsSimpleTextItem* text = new QGraphicsSimpleTextItem(qtext, _group);
   text->setFont(font);
 
-  QPointF posf (pos.x(), pos.y() - metrics->ascent()*_tf.m22());
-  //  note: y = baseline
+  /*std::cout << "draw text "<<qtext.toStdString()
+              << " ("<<pos.x()<<","<<pos.y()<<") "
+              <<" font size="<<font.pixelSize()<<","<<font.pointSizeF()
+              <<" "<<metrics->ascent()<<"+"<<metrics->descent()<<" = "<<metrics->height()
+              <<" "<<_sy<<","<<_tf.m22()
+              <<std::endl;*/
+  //  note: y = 0 = baseline
+  QPointF shift { _sy-_tf.m22(), -metrics->ascent()*_tf.m22()}; //  not sure if this formula is correct. Or even why...
   text->setTransform(_tf);
-  text->setPos(posf);
+  text->setPos(pos+shift);
   text->setBrush(getQBrush());
   _group->addToGroup(text);
 }

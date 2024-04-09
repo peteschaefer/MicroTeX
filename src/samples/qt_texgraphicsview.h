@@ -10,10 +10,16 @@
 
 namespace qt_graphics
 {
+/**
+ * Convenience method for setting up a QGraphicsView with a single item
+ * @param view
+ * @param latex
+ * @param text_size
+ */
    inline void setLaTeX(QGraphicsView* view, const std::wstring& latex, float text_size=20.0) {
         QGraphicsScene* scene = new QGraphicsScene(view);
         tex::TeXGraphicsItem* item = new tex::TeXGraphicsItem();
-        item->setLaTeX(latex,view->width(), 4, text_size);
+        item->renderLaTeX(latex, view->width(), 4, text_size);
 
         QRectF bounds = item->boundingRect();
         //  scale to view

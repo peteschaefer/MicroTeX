@@ -17,14 +17,14 @@ namespace tex
     class TeXGraphicsItem: public QGraphicsItemGroup
     {
     private:
-      void setupRender(TeXRender* render,int padding);
-      void setupText(const std::wstring& latex, int width, int padding, float text_size);
+      void setup(TeXRender* render,int padding);
+      void setupLaTeX(const std::wstring& latex, int width, int padding, float text_size);
 
     public:
       TeXGraphicsItem(QGraphicsItem *parent = nullptr) : QGraphicsItemGroup() { }
 
-      void setRender(TeXRender* render, int padding=0);
-      void setLaTeX(const std::wstring& latex, int width, int padding=0, float text_size=20.0);
+      void render(TeXRender* render, int padding= 0);
+      void renderLaTeX(const std::wstring& latex, int width, int padding= 0, float text_size= 20.0);
     };
 
 

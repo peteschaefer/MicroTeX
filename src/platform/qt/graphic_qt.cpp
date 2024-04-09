@@ -48,7 +48,7 @@ Font_qt::Font_qt(const string& family, int style, float size) {
 
   _font.setBold(style & BOLD);
   _font.setItalic(style & ITALIC);
-    _metrics.reset(new QFontMetricsF(_font));
+  _metrics.reset(new QFontMetricsF(_font));
 }
 
 Font_qt::Font_qt(const string& file, float size)
