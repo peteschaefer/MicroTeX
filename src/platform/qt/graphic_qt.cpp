@@ -299,9 +299,10 @@ void Graphics2D_qt::drawText(const std::wstring& t, float x, float y) {
   _painter->setFont(_font->getQFont());
 
   QString text = wstring_to_QString(t);
-  //qInfo() << "text" << x << y << text << text.toLocal8Bit();
-  //for(size_t i=0; i<t.size(); ++i)
-  //  qInfo() << 'v' << int(t[i]);
+  qInfo() << _font->getQFont().family();
+  qInfo() << "text" << x << y << text << text.toLocal8Bit();
+  for(size_t i=0; i<t.size(); ++i)
+    qInfo() << 'v' << int(t[i]);
 
   _painter->drawText(QPointF(x, y), text);
 }

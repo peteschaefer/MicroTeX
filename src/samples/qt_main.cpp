@@ -45,8 +45,9 @@ int main(int argc, char **argv) {
         table.setRowHeight(i,cellSize.height());
     }
 
-    QObject::connect(table.model(),&QAbstractItemModel::dataChanged, delegate,
-                     &TeXItemDelegate::updateModelData, Qt::UniqueConnection);
+    QObject::connect(table.model(), &QAbstractItemModel::dataChanged,
+                     delegate, &TeXItemDelegate::updateModelData,
+                     Qt::UniqueConnection);
 #endif
 
 

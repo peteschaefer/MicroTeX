@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 project(LaTeX)
 
 add_library(LaTeX ""
-        src/platform/qt/itemdelegate_qt.h)
+        src/platform/qt/itemdelegate_qt.cpp)
+set(QT ON)
 
 # MSVC Compat
 
@@ -53,8 +54,12 @@ if (MSVC)
     target_link_libraries(LaTeX PRIVATE tinyxml2::tinyxml2)
 else ()
     find_package(PkgConfig REQUIRED)
-#   pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET tinyxml2)
-    target_link_libraries(LaTeX PRIVATE tinyxml2)
+#    pkg_check_modules(tinyxml2 REQUIRED IMPORTED_TARGET tinyxml2)
+    target_link_libraries(LaTeX PRIVATE /home/schaefer/lib/libtinyxml2.a)
+    set(Qt5_PATH /opt/m2m/qt5.15.3-dynamic)
+    set(Qt_VERSION 5.15.3)
+    list(APPEND CMAKE_PREFIX_PATH ${Qt5_PATH}/lib64/cmake)
+    include_directories(/home/schaefer/lib)
 endif ()
 
 # source files
@@ -147,38 +152,39 @@ target_sources(LaTeX PRIVATE
         )
 target_include_directories(LaTeX PUBLIC src)
 
-# check operating system
-#set(Qt_PATH /home/nightrider/lib/Qt/6.6.2/gcc_64)
-#set(Qt_VERSION 6.6.2)
-set(Qt_PATH /home/nightrider/lib/Qt/5.10.1/5.10.1/gcc_64)
 set(QT ON)
-#set(SKIA ON)
-list(APPEND CMAKE_PREFIX_PATH ${Qt_PATH}/lib/cmake)
+set(QT_GRAPHICS_VIEW ON)
+
+# check operating system
 
 if (QT)
     message(STATUS, "Cross platform build using Qt")
-    target_compile_definitions(LaTeX PUBLIC -DBUILD_QT)
+    target_compile_definitions(LaTeX PUBLIC -DBUILD_QT -DQT_GRAPHICS_VIEW)
     find_package(QT NAMES Qt6 Qt5 COMPONENTS Gui Widgets PrintSupport REQUIRED)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Gui Widgets PrintSupport REQUIRED)
-
     target_sources(LaTeX PRIVATE
             src/platform/qt/graphic_qt.cpp
             )
     target_link_libraries(LaTeX PRIVATE
             Qt${QT_VERSION_MAJOR}::Gui
+            Qt${QT_VERSION_MAJOR}::Widgets
             )
     add_executable(LaTeXQtSample
             src/platform/qt/itemdelegate_qt.h
             src/samples/qt_texwidget.cpp
             src/samples/qt_mainwindow.cpp
             src/samples/qt_main.cpp
-            )
+            latex.qrc
+#            src/samples/qt_texgraphicsview.h
+#            src/samples/qt_texgraphicsview.cpp
+    )
     target_link_libraries(LaTeXQtSample PRIVATE
             Qt${QT_VERSION_MAJOR}::Widgets
             Qt${QT_VERSION_MAJOR}::PrintSupport
             LaTeX)
     set_target_properties(LaTeXQtSample PROPERTIES OUTPUT_NAME LaTeX)
     set_target_properties(LaTeXQtSample PROPERTIES AUTOMOC ON)
+    set_target_properties(LaTeXQtSample PROPERTIES AUTORCC ON)
 elseif (SKIA)
     message(STATUS, "Cross platform build using Qt and Skia for rendering")
     target_compile_definitions(LaTeX PUBLIC -DBUILD_SKIA -DSK_GL)
@@ -261,7 +267,7 @@ if (MEM_CHECK)
     add_definitions(-DMEM_CHECK)
 endif ()
 
-option(QT "Compile using Qt instead of Win32/Gtk" ON)
+option(QT "Compile using Qt instead of Win32/Gtk" OFF)
 
 
 option(BUILD_EXAMPLE "Build examples" OFF)
